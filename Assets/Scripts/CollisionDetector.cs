@@ -7,4 +7,9 @@ public class CollisionDetector : MonoBehaviour
     {
         Debug.Log("Столкнулся с: " + collision.gameObject.name);
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("Вошел в триггер: " + other.gameObject.name);
+    }
 }
