@@ -43,7 +43,6 @@ public class UniBpmAnalyzer
         {
             return -1;
         }
-        Debug.Log("AnalyzeBpm audioClipName : " + clip.name);
 
         int frequency = clip.frequency;
 
@@ -59,8 +58,8 @@ public class UniBpmAnalyzer
         var volumeArr = CreateVolumeArray(allSamples, frequency, channels, splitFrameSize);
 
         // Search bpm from volume array
-        int bpm = SearchBpm(volumeArr, frequency, splitFrameSize);
-        Debug.Log("Matched BPM : " + bpm/2);
+        int bpm = SearchBpm(volumeArr, frequency, splitFrameSize)/2;
+        Debug.Log("Matched BPM : " + bpm);
 
         return bpm;
     }

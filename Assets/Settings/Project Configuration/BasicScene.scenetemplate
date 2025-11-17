@@ -11,7 +11,7 @@ Texture2D:
     serializedVersion: 2
     Hash: 00000000000000000000000000000000
   m_IsAlphaChannelOptional: 0
-  serializedVersion: 3
+  serializedVersion: 4
   m_Width: 888
   m_Height: 540
   m_CompleteImageSize: 239760
@@ -192,8 +192,8 @@ MonoBehaviour:
     instantiationMode: 0
   - dependency: {fileID: 8044548732317020784, guid: 22a931750861f724a854421dccfa17e0, type: 3}
     instantiationMode: 0
-  - dependency: {fileID: 919132149155446097, guid: d8f8e166b99d5fe41a11f4ea2785d64c, type: 3}
-    instantiationMode: 0
+  - dependency: {fileID: 8300000, guid: c11e7154b2a3cb74b8d6af571a5bbf77, type: 3}
+    instantiationMode: 1
   - dependency: {fileID: 5006834288570464544, guid: 046ec50b8328aa54c96774a0cc973a01, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 2100000, guid: b9c5d6ba92c526a43991da07d41229bc, type: 2}
@@ -288,8 +288,6 @@ MonoBehaviour:
     instantiationMode: 0
   - dependency: {fileID: 5792320505006346919, guid: f91743800f2ab3740ac9db4eedb46f2d, type: 3}
     instantiationMode: 0
-  - dependency: {fileID: 2800000, guid: 5582ded7245c6074b9e3c52d0ee70c84, type: 3}
-    instantiationMode: 0
   - dependency: {fileID: 2800000, guid: a192ea0e9f5170a4a8b4ec9cd0f592ae, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 2100000, guid: 9ffdee5782f720247a027f75edcb9c08, type: 2}
@@ -308,8 +306,6 @@ MonoBehaviour:
     instantiationMode: 0
   - dependency: {fileID: 100000, guid: 7308b87287964d64b9769b7e0d6d7314, type: 3}
     instantiationMode: 0
-  - dependency: {fileID: 1927095934725912876, guid: a9b081014bad86f4a80b60284279d21b, type: 3}
-    instantiationMode: 0
   - dependency: {fileID: 2800000, guid: 79ef3e688a809c344a2810096ad448bd, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 1573117774132190, guid: b762b04c7fe35704cbdbf1806a638bf1, type: 3}
@@ -323,6 +319,8 @@ MonoBehaviour:
   - dependency: {fileID: 919132149155446097, guid: 16114d403eabb53438de032c6f0d1deb, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 2800000, guid: 7a64650033ac05447acbadbe68bf5324, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2800000, guid: b342eb1e41a45ce41b5c7c684a17c465, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 117895243694500892, guid: 3e7be61a66e072c44bc2cc6bbee79f45, type: 3}
     instantiationMode: 0
@@ -536,8 +534,6 @@ MonoBehaviour:
     instantiationMode: 0
   - dependency: {fileID: 3524024904577399924, guid: ff74a2d207593764ea3699571e28d00a, type: 3}
     instantiationMode: 0
-  - dependency: {fileID: 2100000, guid: 4580dd49916b3c542b97109c8ca425f3, type: 2}
-    instantiationMode: 0
   - dependency: {fileID: 6175235209460370027, guid: f3421f20f5f724a4fab68ce9de3753e8, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 7278383590123664122, guid: 372a0d77e8005d947bd72f3cf2cbde53, type: 3}
@@ -546,11 +542,13 @@ MonoBehaviour:
     instantiationMode: 0
   - dependency: {fileID: 6026238721873138722, guid: 70c062c3a7500e7479c9797b6190948e, type: 3}
     instantiationMode: 0
-  - dependency: {fileID: 2100000, guid: 4bb7c435fb1657c42a9ec5ad46b7100a, type: 2}
+  - dependency: {fileID: 2100000, guid: 4580dd49916b3c542b97109c8ca425f3, type: 2}
     instantiationMode: 0
   - dependency: {fileID: 8254621867992190529, guid: 77693aa9ab898634298b44790e14e5f3, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 2800000, guid: 60fe05f4313f9a743a60a9520b20834a, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2100000, guid: 4bb7c435fb1657c42a9ec5ad46b7100a, type: 2}
     instantiationMode: 0
   - dependency: {fileID: 2800000, guid: 37f203c6a42b6b54ea38024733ee10e5, type: 3}
     instantiationMode: 0
@@ -743,8 +741,6 @@ MonoBehaviour:
   - dependency: {fileID: 8913750980977116659, guid: 283fe20ffc8ff164080c612ba8cb7b86, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 2100000, guid: 0656c89128e147645951f2c0649b10f9, type: 2}
-    instantiationMode: 0
-  - dependency: {fileID: 2100000, guid: 5f01895f1ecb58445b3aa62be24d6bca, type: 2}
     instantiationMode: 0
   - dependency: {fileID: 2100000, guid: cd2528b4c58decf4fa93cbcfc4c870ee, type: 2}
     instantiationMode: 0
