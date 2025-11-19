@@ -5,11 +5,20 @@ public class CollisionDetector : MonoBehaviour
     // Коллизия при столкновении (для 3D)
     void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Столкнулся с: " + collision.gameObject.name);
+        if (collision.gameObject.CompareTag("Anchor"))
+        {
+            Debug.Log("Коллизия с кружком");
+        }
+        //Debug.Log("Столкнулся с: " + collision.gameObject.tag);
     }
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Вошел в триггер: " + other.gameObject.name);
+        if (other.gameObject.CompareTag("Anchor"))
+        {
+            Debug.Log("Триггер с кружком");
+
+        }
+        //Debug.Log("Вошел в триггер: " + other.gameObject.name);
     }
 }
