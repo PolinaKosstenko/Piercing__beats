@@ -4,7 +4,7 @@ public class CreateCircle : MonoBehaviour
 {
     public Sprite circleSprite;
     public float circleScale = 0.2f;
-    public Color circleColor = Color.cadetBlue;
+    public Color circleColor = Color.red;
     
     public AudioClip audioClip;
 
