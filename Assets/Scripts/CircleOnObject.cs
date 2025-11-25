@@ -14,6 +14,8 @@ public class CreateCircle : MonoBehaviour
     private float beatTimer;
     private float beatDuration;
     private int currentBPM;
+    private int difficulty = 3;
+    private int speed = 1;
     private bool isBpmAnalyzed = false;
     private bool isCircleActive = false;
     private bool isMusicPlaying = false;
@@ -91,7 +93,7 @@ public class CreateCircle : MonoBehaviour
     {
         if (audioClip != null)
         {
-            currentBPM = UniBpmAnalyzer.AnalyzeBpm(audioClip);
+            currentBPM = UniBpmAnalyzer.AnalyzeBpm(audioClip) / (4/speed);
             
             if (currentBPM > 0)
             {
@@ -126,7 +128,7 @@ public class CreateCircle : MonoBehaviour
 
         beatTimer += Time.deltaTime;
         
-        float pulseProgress = beatTimer / beatDuration;
+        float pulseProgress = (beatTimer * 2 * difficulty) / beatDuration;
 
         if (isCircleActive) 
         {
