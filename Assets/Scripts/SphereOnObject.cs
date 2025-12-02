@@ -3,31 +3,38 @@ using System.Collections.Generic;
 
 public class CreateSphere : MonoBehaviour
 {
-    public float sphereScale =  1f;
+    public float sphereScale = 1f;
     public Color sphereColor = Color.greenYellow;
     public AudioClip audioClip;
     public int difficulty = 3;
-    public int speed = 1;
+    public int[] availableNoteValues = { 1, 2, 4, 8 }; // Доступные длительности нот
+    
     public GameObject sphereObject;
     
-    private Renderer sphereRenderer;
     private AudioSource audioSource;
     private float beatTimer;
-    private float beatDuration;
-    private int currentBPM;
+    private float beatDuration; // Длительность четвертной ноты (1/4)
+    private float currentBPM;
+    private float trackDuration; // Длительность трека в секундах
     private bool isBpmAnalyzed = false;
-    private bool isSphereActive = false;
     private bool isMusicPlaying = false;
     private Collider[] bodyColliders;
     private Transform bodyCollidersParent;
     
     private List<GameObject> activeSpheres = new List<GameObject>();
     
+    private int[] speed; // Массив длительностей нот
+    private float[] noteDurations; // Массив фактических длительностей в секундах
+    private float totalGeneratedDuration = 0f; // Общая длительность сгенерированных нот
+    private float timeSinceLastSphere = 0f;
+    private int currentSpeedIndex = 0;
+    private float nextSphereTime = 0f;
+    
     void Start()
     {
         FindBodyCollidersInThisObject();
         SetupAudioSource();
-        AnalyzeBPM();
+        AnalyzeBPMAndDuration();
     }
     
     void FindBodyCollidersInThisObject()
@@ -116,14 +123,19 @@ public class CreateSphere : MonoBehaviour
 
     void CreateNewSphere()
     {
-        // Выбираем случайный коллайдер
+        if (bodyColliders == null || bodyColliders.Length == 0)
+        {
+            Debug.LogWarning("No body colliders found, spawning at default position");
+            CreateSphereAtPosition(transform.position);
+            return;
+        }
+        
         int randomIndex = Random.Range(0, bodyColliders.Length);
         Collider selectedCollider = bodyColliders[randomIndex];
         
         if (selectedCollider == null)
         {
             Debug.LogWarning("Selected collider is null, choosing another one");
-            // Пробуем найти другой валидный коллайдер
             foreach (Collider coll in bodyColliders)
             {
                 if (coll != null)
@@ -140,22 +152,38 @@ public class CreateSphere : MonoBehaviour
             }
         }
         
-        // Получаем случайную позицию внутри выбранного коллайдера
         Vector3 spawnPosition = GetRandomPositionInCollider(selectedCollider);
         CreateSphereAtPosition(spawnPosition);
-        Debug.Log($"Spawning sphere in: {selectedCollider.name}");
+        
+        if (currentSpeedIndex < speed.Length)
+        {
+            string noteName = GetNoteName(speed[currentSpeedIndex]);
+            Debug.Log($"Sphere {currentSpeedIndex + 1}/{speed.Length}: {noteName} note ({noteDurations[currentSpeedIndex]:F2}s) at {selectedCollider.name}");
+        }
+    }
+    
+    string GetNoteName(int speedValue)
+    {
+        switch (speedValue)
+        {
+            case 1: return "целая";
+            case 2: return "половинная";
+            case 4: return "четвертная";
+            case 8: return "восьмая";
+            case 16: return "шестнадцатая";
+            case 32: return "тридцатьвторая";
+            default: return $"{speedValue}";
+        }
     }
     
     void CreateSphereAtPosition(Vector3 position)
     {
-        GameObject newSphere =  Instantiate(sphereObject, position, Quaternion.identity);
+        GameObject newSphere = Instantiate(sphereObject, position, Quaternion.identity);
         newSphere.name = "PulseSphere";
-        newSphere.transform.localScale = Vector3.one * sphereScale;
-    
-        sphereRenderer = newSphere.GetComponent<Renderer>();
-    
+        
         SphereController sphereController = newSphere.AddComponent<SphereController>();
-        sphereController.Initialize(sphereScale, beatDuration, difficulty);
+        float currentNoteDuration = noteDurations[currentSpeedIndex];
+        sphereController.Initialize(sphereScale, currentNoteDuration, difficulty, sphereColor);
         
         activeSpheres.Add(newSphere);
     }
@@ -172,6 +200,8 @@ public class CreateSphere : MonoBehaviour
         {
             audioSource.Play();
             isMusicPlaying = true;
+            trackDuration = audioClip.length;
+            Debug.Log($"Track duration: {trackDuration:F2} seconds");
         }
     }
     
@@ -184,8 +214,14 @@ public class CreateSphere : MonoBehaviour
                 isMusicPlaying = false;
                 Debug.Log("Music ended");
                 
-                // Очищаем все сферы
                 ClearAllSpheres();
+                
+                // Показываем статистику
+                Debug.Log($"=== Playback Complete ===");
+                Debug.Log($"Total spheres: {speed.Length}");
+                Debug.Log($"Theoretical duration: {totalGeneratedDuration:F2}s");
+                Debug.Log($"Actual track duration: {trackDuration:F2}s");
+                Debug.Log($"Difference: {Mathf.Abs(totalGeneratedDuration - trackDuration):F2}s");
             }
         }
     }
@@ -202,22 +238,30 @@ public class CreateSphere : MonoBehaviour
         activeSpheres.Clear();
     }
     
-    void AnalyzeBPM()
+    void AnalyzeBPMAndDuration()
     {
         if (audioClip != null)
         {
-            currentBPM = UniBpmAnalyzer.AnalyzeBpm(audioClip) / (4/speed);
+            currentBPM = UniBpmAnalyzer.AnalyzeBpm(audioClip);
             
             if (currentBPM > 0)
             {
                 CalculateBeatDuration();
                 isBpmAnalyzed = true;
+                
+                // Генерируем массив длительностей на всю длину трека
+                GenerateNoteSequenceForTrack();
+                
+                // Вычисляем фактические длительности
+                CalculateNoteDurations();
+                
+                // Создаем первую сферу
                 CreateNewSphere();
-            }
-            else
-            {
-                Debug.LogError("Failed to analyze BPM");
-                isBpmAnalyzed = false;
+                
+                // Рассчитываем время следующей сферы
+                CalculateNextSphereTime();
+                
+                LogGeneratedSequence();
             }
         }
         else
@@ -230,19 +274,128 @@ public class CreateSphere : MonoBehaviour
     void CalculateBeatDuration()
     {
         beatDuration = 60f / currentBPM;
-        Debug.Log("Beat duration in seconds: " + beatDuration);
+        Debug.Log($"BPM: {currentBPM}, Quarter note: {beatDuration:F3}s");
+    }
+    
+    void GenerateNoteSequenceForTrack()
+    {
+        List<int> noteSequence = new List<int>();
+        totalGeneratedDuration = 0f;
+        
+        // Минимальная длительность ноты (шестнадцатая)
+        float minNoteDuration = (4f / 16f) * beatDuration;
+        
+        // Генерируем ноты пока не заполним всю длительность трека
+        while (totalGeneratedDuration < trackDuration - minNoteDuration)
+        {
+            // Выбираем случайную длительность ноты из доступных
+            int randomNoteValue = availableNoteValues[Random.Range(0, availableNoteValues.Length)];
+            
+            // Рассчитываем длительность этой ноты в секундах
+            float noteDuration = (4f / randomNoteValue) * beatDuration;
+            
+            // Проверяем, не превысим ли общую длительность
+            if (totalGeneratedDuration + noteDuration <= trackDuration + minNoteDuration)
+            {
+                noteSequence.Add(randomNoteValue);
+                totalGeneratedDuration += noteDuration;
+            }
+            else
+            {
+                // Если не помещается, попробуем более короткую ноту
+                int shorterNote = FindShorterNote(randomNoteValue);
+                if (shorterNote > 0)
+                {
+                    float shorterDuration = (4f / shorterNote) * beatDuration;
+                    if (totalGeneratedDuration + shorterDuration <= trackDuration + minNoteDuration)
+                    {
+                        noteSequence.Add(shorterNote);
+                        totalGeneratedDuration += shorterDuration;
+                    }
+                }
+            }
+        }
+        
+        // Конвертируем список в массив
+        speed = noteSequence.ToArray();
+        
+        Debug.Log($"Generated {speed.Length} notes, total duration: {totalGeneratedDuration:F2}s (track: {trackDuration:F2}s)");
+    }
+    
+    int FindShorterNote(int currentNote)
+    {
+        // Ищем более короткую ноту из доступных
+        for (int i = 0; i < availableNoteValues.Length; i++)
+        {
+            if (availableNoteValues[i] > currentNote) // Большее значение = более короткая нота
+            {
+                return availableNoteValues[i];
+            }
+        }
+        return -1; // Не нашли более короткую ноту
+    }
+    
+    void CalculateNoteDurations()
+    {
+        noteDurations = new float[speed.Length];
+        
+        for (int i = 0; i < speed.Length; i++)
+        {
+            noteDurations[i] = (4f / speed[i]) * beatDuration;
+        }
+    }
+    
+    void CalculateNextSphereTime()
+    {
+        if (currentSpeedIndex < noteDurations.Length)
+        {
+            nextSphereTime = noteDurations[currentSpeedIndex];
+        }
+    }
+    
+    void LogGeneratedSequence()
+    {
+        Debug.Log("=== Generated Note Sequence ===");
+        float cumulativeTime = 0f;
+        
+        for (int i = 0; i < speed.Length; i++)
+        {
+            cumulativeTime += noteDurations[i];
+            string noteName = GetNoteName(speed[i]);
+            string timing = $"{(cumulativeTime / 60f):F0}:{(cumulativeTime % 60f):00.0}";
+            Debug.Log($"{i + 1:000}. {noteName} ({speed[i]}) - {noteDurations[i]:F3}s @ {timing}");
+        }
+        
+        Debug.Log($"Total: {speed.Length} notes, {cumulativeTime:F2}s");
+        Debug.Log("===============================");
     }
 
     void Update()
     {
         CheckMusicStatus();
         
-        if (!isBpmAnalyzed || !isMusicPlaying) return;
+        if (!isBpmAnalyzed || !isMusicPlaying || speed == null) return;
 
-        beatTimer += Time.deltaTime;
+        timeSinceLastSphere += Time.deltaTime;
         
-        // float pulseProgress = (beatTimer * 2 * difficulty) / beatDuration;
-
+        // Очищаем неактивные сферы
+        CleanupInactiveSpheres();
+        
+        // Показываем прогресс
+        ShowProgress();
+        
+        // Проверяем, пора ли создать новую сферу
+        if (timeSinceLastSphere >= nextSphereTime && currentSpeedIndex < speed.Length - 1)
+        {
+            currentSpeedIndex++;
+            CreateNewSphere();
+            timeSinceLastSphere = 0f;
+            CalculateNextSphereTime();
+        }
+    }
+    
+    void CleanupInactiveSpheres()
+    {
         for (int i = activeSpheres.Count - 1; i >= 0; i--)
         {
             if (activeSpheres[i] == null)
@@ -250,11 +403,28 @@ public class CreateSphere : MonoBehaviour
                 activeSpheres.RemoveAt(i);
             }
         }
+    }
+    
+    void ShowProgress()
+    {
+        // Можно выводить прогресс в UI
+        float currentTime = audioSource.time;
+        float progressPercent = (currentTime / trackDuration) * 100f;
+        int spheresProgress = speed.Length > 0 ? (int)((currentSpeedIndex / (float)speed.Length) * 100f) : 0;
         
-        if (beatTimer >= beatDuration)
+        // Выводим в консоль каждые 10 секунд
+        if (Mathf.FloorToInt(currentTime) % 10 == 0 && Mathf.FloorToInt(currentTime) != 0)
         {
-            beatTimer = 0f;
-            CreateNewSphere();
+            if (Mathf.FloorToInt(currentTime) % 10 == 0)
+            {
+                Debug.Log($"Progress: {currentTime:F0}/{trackDuration:F0}s ({progressPercent:F1}%), " +
+                         $"Spheres: {currentSpeedIndex}/{speed.Length} ({spheresProgress}%)");
+            }
         }
+    }
+    
+    void OnDestroy()
+    {
+        ClearAllSpheres();
     }
 }
