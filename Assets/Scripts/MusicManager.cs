@@ -1,15 +1,28 @@
+using System.Collections.Generic;
 using UnityEngine;
+
+public enum Songs
+{
+    DyingStar = 0,
+    Welcome,
+    LastDestination
+}
 
 public class MusicManager : MonoBehaviour
 {
-    public static MusicManager Instance;
+    public static MusicManager Instance { get; private set; }
 
-    [SerializeField] private AudioClip backgroundMusic;
+    [SerializeField] private List<AudioClip> backgroundMusic;
+    AudioClip current;
     private AudioSource audioSource;
 
-    void Awake()
+    public void SwitchSong(Songs s)
     {
-        
+        current = backgroundMusic[(int)s];
+    }
+
+    void Awake()
+    {        
         if (Instance == null)
         {
             Instance = this;
@@ -26,6 +39,12 @@ public class MusicManager : MonoBehaviour
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+
+        current = backgroundMusic[(int)Songs.DyingStar];
+        audioSource.clip = current;
+        audioSource.loop = false;
+        audioSource.playOnAwake = false;
+        audioSource.volume = 0.15f;
     }
 
     void Start()
@@ -37,7 +56,7 @@ public class MusicManager : MonoBehaviour
     {
         if (backgroundMusic != null && audioSource != null)
         {
-            audioSource.clip = backgroundMusic;
+            audioSource.clip = current;
             audioSource.loop = true;
             audioSource.Play();
         }

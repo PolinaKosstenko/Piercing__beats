@@ -204,14 +204,12 @@ public class CreateSphere : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
         
-        audioSource.clip = audioClip;
-        audioSource.loop = false;
-        audioSource.playOnAwake = false;
-        audioSource.volume = 0.15f;
+
 
         if (audioClip != null && enabled)
         {
-            audioSource.Play();
+            MusicManager.Instance.SwitchSong(Songs.DyingStar);
+            // audioSource.Play();
             isMusicPlaying = true;
             trackDuration = audioClip.length;
             Debug.Log($"Track duration: {trackDuration:F2} seconds");

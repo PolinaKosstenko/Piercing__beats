@@ -60,7 +60,7 @@ QualitySettings:
     terrainMaxTrees: 50
     excludedTargetPlatforms: []
   - serializedVersion: 5
-    name: Low
+    name: Medium
     pixelLightCount: 0
     shadows: 0
     shadowResolution: 0
