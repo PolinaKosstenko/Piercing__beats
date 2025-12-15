@@ -36,19 +36,30 @@ public class CreateSphere : MonoBehaviour
         SetupAudioSource();
         AnalyzeBPMAndDuration();
     }
-
+    
+    void OnEnable()
+    {
+        if (isBpmAnalyzed && !audioSource.isPlaying)
+        {
+            audioSource.Play();
+            isMusicPlaying = true;
+        }
+    }
+    
+    void OnDisable()
+    {
+        StopMusic();
+        ClearAllSpheres();
+        
+        timeSinceLastSphere = 0f;
+        currentSpeedIndex = 0;
+        nextSphereTime = 0f;
+    }
+    
     void FindBodyCollidersInThisObject()
     {
         bodyCollidersParent = FindDeepChild(transform, "Body's Colliders");
-
-        if (bodyCollidersParent == null)
-        {
-            Debug.LogError($"Could not find 'Body's Colliders' in {gameObject.name} hierarchy!");
-            return;
-        }
-
-        Debug.Log($"Found 'Body's Colliders' at: {bodyCollidersParent.name}");
-
+        
         bodyColliders = new Collider[bodyCollidersParent.childCount];
         int validCollidersCount = 0;
 
@@ -61,11 +72,7 @@ public class CreateSphere : MonoBehaviour
             {
                 bodyColliders[validCollidersCount] = collider;
                 validCollidersCount++;
-                Debug.Log($"Found collider: {child.name}");
-            }
-            else
-            {
-                Debug.LogWarning($"Child '{child.name}' has no Collider component!");
+                // Debug.Log($"Found collider: {child.name}"); // названия коллайдеров
             }
         }
 
@@ -125,8 +132,7 @@ public class CreateSphere : MonoBehaviour
     {
         if (bodyColliders == null || bodyColliders.Length == 0)
         {
-            Debug.LogWarning("No body colliders found, spawning at default position");
-            CreateSphereAtPosition(transform.position);
+            Debug.LogWarning("No colliders!");
             return;
         }
 
@@ -192,18 +198,36 @@ public class CreateSphere : MonoBehaviour
 
     void SetupAudioSource()
     {
-        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        
         audioSource.clip = audioClip;
         audioSource.loop = false;
         audioSource.playOnAwake = false;
         audioSource.volume = 0.15f;
 
-        if (audioClip != null)
+        if (audioClip != null && enabled)
         {
             audioSource.Play();
             isMusicPlaying = true;
             trackDuration = audioClip.length;
             Debug.Log($"Track duration: {trackDuration:F2} seconds");
+        }
+        else if (audioClip != null)
+        {
+            trackDuration = audioClip.length;
+        }
+    }
+    
+    public void StopMusic()
+    {
+        if (audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            isMusicPlaying = false;
         }
     }
 
@@ -217,7 +241,13 @@ public class CreateSphere : MonoBehaviour
                 Debug.Log("Music ended");
 
                 ClearAllSpheres();
-
+                
+                // Если скрипт все еще включен - выключаем его
+                if (enabled)
+                {
+                    enabled = false;
+                }
+                
                 // Показываем статистику
                 Debug.Log($"=== Playback Complete ===");
                 Debug.Log($"Total spheres: {speed.Length}");
@@ -428,10 +458,6 @@ public class CreateSphere : MonoBehaviour
     void OnDestroy()
     {
         ClearAllSpheres();
-
-        if (audioSource != null)
-        {
-            audioSource.Stop();
-        }
+        StopMusic();
     }
 }
