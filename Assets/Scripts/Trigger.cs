@@ -1,15 +1,13 @@
 ﻿using UnityEngine;
 
-public class TriggerToSphere : MonoBehaviour
+public class Trigger : MonoBehaviour
 {
     [Header("Настройки активации")]
     public float activationRadius = 7f;
-    public float deactivationRadius = 9f; // Радиус для выключения
+    public float deactivationRadius = 9f;
     
     [Header("Визуализация")]
     public bool showGizmos = true;
-    public Color activationColor = Color.green;
-    public Color deactivationColor = Color.yellow;
     
     private Transform player;
     private CreateSphere sphereCreator;
@@ -17,17 +15,16 @@ public class TriggerToSphere : MonoBehaviour
     
     void Start()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player"); 
         player = playerObj.transform;
         sphereCreator = GetComponent<CreateSphere>();
-        sphereCreator.enabled = false;
-        StopAudioOnObject();
     }
     
     void Update()
     {
         if (player == null || sphereCreator == null) return;
         float distance = Vector3.Distance(transform.position, player.position);
+        
         if (!isActive && distance <= activationRadius) ActivateSpheres();
         else if (isActive && distance > deactivationRadius) DeactivateSpheres();
     }
@@ -36,33 +33,22 @@ public class TriggerToSphere : MonoBehaviour
     {
         isActive = true;
         sphereCreator.enabled = true;
-        
     }
     
     void DeactivateSpheres()
     {
         isActive = false;
         sphereCreator.enabled = false;
-        StopAudioOnObject();
-    }
-    
-    void StopAudioOnObject()
-    {
-        AudioSource[] audioSources = GetComponents<AudioSource>();
-        foreach (AudioSource audio in audioSources)
-        {
-            if (audio.isPlaying) audio.Stop();
-        }
     }
     
     void OnDrawGizmosSelected()
     {
         if (!showGizmos) return;
         
-        Gizmos.color = activationColor;
+        Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, activationRadius);
         
-        Gizmos.color = deactivationColor;
+        Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, deactivationRadius);
     }
     
@@ -70,7 +56,6 @@ public class TriggerToSphere : MonoBehaviour
     {
         if (!showGizmos || !Application.isPlaying) return;
         
-        // В игровом режиме показываем статус цветом
         Gizmos.color = isActive ? Color.green : Color.red;
         Gizmos.DrawWireSphere(transform.position, activationRadius);
     }

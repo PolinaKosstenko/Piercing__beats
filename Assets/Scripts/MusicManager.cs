@@ -3,7 +3,7 @@ using UnityEngine;
 
 public enum Songs
 {
-    DyingStar = 0,
+    DyingStar,
     Welcome,
     LastDestination
 }
@@ -16,6 +16,19 @@ public class MusicManager : MonoBehaviour
     AudioClip current;
     private AudioSource audioSource;
 
+    public bool IsPlaying()
+    {
+        return audioSource.isPlaying;
+    }
+    
+    public void StopMusic()
+    {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
+    }
+    
     public void SwitchSong(Songs s)
     {
         current = backgroundMusic[(int)s];
@@ -54,7 +67,7 @@ public class MusicManager : MonoBehaviour
 
     public void PlayBackgroundMusic()
     {
-        if (backgroundMusic != null && audioSource != null)
+        if (backgroundMusic != null && audioSource != null && current != null)
         {
             audioSource.clip = current;
             audioSource.loop = true;
