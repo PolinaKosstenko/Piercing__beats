@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class CreateSphere : MonoBehaviour
 {
     public float sphereScale = 1f;
-    public Color sphereColor = Color.greenYellow;
+    public Color sphereColor = Color.red;
     public AudioClip audioClip;
     public int difficulty = 3;
     public int[] availableNoteValues = { 1, 2, 4, 8 }; // Доступные длительности нот
