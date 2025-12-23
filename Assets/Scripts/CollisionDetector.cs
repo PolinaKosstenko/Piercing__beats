@@ -8,21 +8,7 @@ public class SimpleSphereDestroyer : MonoBehaviour
 
     public AudioClip soundDestroy;
     public AudioClip soundNotDestroy;
-    
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Hands"))
-        {
-            Debug.Log("Попадание!");
-            AudioSource.PlayClipAtPoint(soundDestroy, transform.position);
-            Destroy(gameObject);
-        }
-        else
-        {
-            AudioSource.PlayClipAtPoint(soundNotDestroy, transform.position);
-            Debug.Log("Нет попадания");
-        }
-    }
+
     
     void OnTriggerEnter(Collider other)
     {
@@ -33,14 +19,19 @@ public class SimpleSphereDestroyer : MonoBehaviour
             Bar.fillAmount = HP / 100;
         }
         //Debug.Log("����� � �������: " + other.gameObject.name);
-        if (other.gameObject.CompareTag("Hands"))
+        if (other.gameObject.CompareTag("SphereTag"))
         {
-            Debug.Log("Попадание (триггер)!");
-            Destroy(gameObject);
-        }
-        else
-        {
-            Debug.Log("Нет попадания (триггер)");
+            if (other.gameObject.GetComponent<Transform>().localScale.x <= 0.1)
+            {
+                Debug.Log("Нет попадания");
+                AudioSource.PlayClipAtPoint(soundNotDestroy, transform.position);
+
+            }
+            else {
+                Debug.Log("Попадание!");
+                AudioSource.PlayClipAtPoint(soundDestroy, transform.position);
+            }
+            // Destroy(gameObject);
         }
     }
 }

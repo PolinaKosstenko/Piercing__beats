@@ -6,16 +6,17 @@ TagManager:
   tags:
   - Anchor
   - Enemy
+  - CinemachineTarget
   - SphereTag
   - Hands
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - SphereLayer
+  - 
   - Water
   - UI
-  - RobotLayer
+  - 
   - 
   - 
   - 
