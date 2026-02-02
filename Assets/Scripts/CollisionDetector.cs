@@ -1,24 +1,28 @@
+using UnityEngine.UI;
 using UnityEngine;
 
 public class CollisionDetector : MonoBehaviour
 {
-    // Коллизия при столкновении (для 3D)
+    private float HP = 100f;
+    public Image Bar;
+
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Anchor"))
         {
-            Debug.Log("Коллизия с кружком");
+            Debug.Log("Colision");
         }
-        //Debug.Log("Столкнулся с: " + collision.gameObject.tag);
+        //Debug.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ: " + collision.gameObject.tag);
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("Anchor"))
+        if (other.gameObject.CompareTag("Enemy"))
         {
-            Debug.Log("Триггер с кружком");
-
+            Debug.Log("Triggered");
+            HP -= 5;
+            Bar.fillAmount = HP / 100;
         }
-        //Debug.Log("Вошел в триггер: " + other.gameObject.name);
+        //Debug.Log("пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: " + other.gameObject.name);
     }
 }
