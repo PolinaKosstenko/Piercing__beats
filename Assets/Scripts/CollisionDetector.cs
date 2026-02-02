@@ -1,20 +1,29 @@
 using UnityEngine.UI;
 using UnityEngine;
 
-public class CollisionDetector : MonoBehaviour
+public class SimpleSphereDestroyer : MonoBehaviour
 {
     private float HP = 100f;
     public Image Bar;
 
+    public AudioClip soundDestroy;
+    public AudioClip soundNotDestroy;
+    
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Anchor"))
+        if (collision.gameObject.CompareTag("Hands"))
         {
-            Debug.Log("Colision");
+            Debug.Log("Попадание!");
+            AudioSource.PlayClipAtPoint(soundDestroy, transform.position);
+            Destroy(gameObject);
         }
-        //Debug.Log("���������� �: " + collision.gameObject.tag);
+        else
+        {
+            AudioSource.PlayClipAtPoint(soundNotDestroy, transform.position);
+            Debug.Log("Нет попадания");
+        }
     }
-
+    
     void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Enemy"))
@@ -24,5 +33,14 @@ public class CollisionDetector : MonoBehaviour
             Bar.fillAmount = HP / 100;
         }
         //Debug.Log("����� � �������: " + other.gameObject.name);
+        if (other.gameObject.CompareTag("Hands"))
+        {
+            Debug.Log("Попадание (триггер)!");
+            Destroy(gameObject);
+        }
+        else
+        {
+            Debug.Log("Нет попадания (триггер)");
+        }
     }
 }
