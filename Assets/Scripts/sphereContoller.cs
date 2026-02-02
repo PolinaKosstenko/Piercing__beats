@@ -3,55 +3,86 @@
 public class SphereController : MonoBehaviour
 {
     private float initialScale;
-    private float lifeTime;
+    private float targetScale = 0f;
+    private float scaleDownSpeed;
+    private Color sphereColor;
+    private float difficulty;
+    
+
+    // Фиксированное время сжатия для всех кругов
+    private const float FIXED_CONTRACT_TIME = 1.5f;
+    private float lifeTimer;
     private float maxLifeTime;
-    private int difficulty;
-    private Renderer sphereRenderer;
-    private Color initialColor;
-    
-    public void Initialize(float scale, float beatDuration, int diff, Color color)
+
+    public void Initialize(float startScale, float noteDuration, int diff, Color color)
     {
-        initialScale = scale;
-        maxLifeTime = beatDuration;
+        initialScale = startScale;
         difficulty = diff;
-        lifeTime = 0f;
-        
-        sphereRenderer = GetComponent<Renderer>();
-        if (sphereRenderer != null)
-        {
-            initialColor = color;
-            sphereRenderer.material.color = color;
-        }
+        sphereColor = color;
+
+        // Рассчитываем фиксированную скорость сжатия
+        scaleDownSpeed = initialScale / FIXED_CONTRACT_TIME;
+
+        // Устанавливаем максимальное время жизни
+        maxLifeTime = FIXED_CONTRACT_TIME + 0.5f;
+        lifeTimer = 0f;
+
+        // Настраиваем визуал
+        SetupVisuals();
+
+        // Логирование для отладки
+        Debug.Log($"Sphere created: scale={initialScale}, contractTime={FIXED_CONTRACT_TIME}s, speed={scaleDownSpeed:F3}/s");
     }
-    
+
+    void SetupVisuals()
+    {
+        // Настройка материала
+        Renderer renderer = GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.material = new Material(Shader.Find("Standard"));
+            renderer.material.color = sphereColor;
+            renderer.material.SetFloat("_Metallic", 0.5f);
+            renderer.material.SetFloat("_Glossiness", 0.5f);
+        }
+
+        // Устанавливаем начальный масштаб
+        transform.localScale = Vector3.one * initialScale;
+    }
+
     void Update()
     {
-        lifeTime += Time.deltaTime / 3;
-        
-        float lifeProgress = lifeTime / maxLifeTime ;
-        
-        if (lifeProgress >= 1f)
+        lifeTimer += Time.deltaTime;
+
+        // Медленно уменьшаем масштаб с фиксированной скоростью
+        if (transform.localScale.x > targetScale)
         {
-           // Destroy(gameObject); Раскоментить
-            return;
+            float deltaScale = scaleDownSpeed * Time.deltaTime;
+            float newScale = Mathf.Max(transform.localScale.x - deltaScale, targetScale);
+            transform.localScale = Vector3.one * newScale;
+
+            // Уничтожаем, если сжался полностью
+            if (newScale <= targetScale + 0.01f)
+            {
+                Destroy(gameObject);
+                return;
+            }
         }
-        
-        float pulseProgress = (lifeTime * 2 * difficulty) / maxLifeTime;
-        float scaleProgress = Mathf.Clamp01(1f - pulseProgress);
-        float currentScale = initialScale;// * scaleProgress; Раскоментить
-        
-        transform.localScale = Vector3.one * currentScale;
-        
-        if (sphereRenderer != null)
+
+        // Автоматическое уничтожение по таймеру (на всякий случай)
+        if (lifeTimer >= maxLifeTime)
         {
-            Color currentColor = initialColor;
-            // currentColor.a = scaleProgress; Раскоментить
-            sphereRenderer.material.color = currentColor;
+            Destroy(gameObject);
         }
-        
-        if (currentScale <= 0.01f)
+    }
+
+    void OnDestroy()
+    {
+        // Очистка материала
+        Renderer renderer = GetComponent<Renderer>();
+        if (renderer != null && renderer.material != null)
         {
-           // Destroy(gameObject); Раскоментить
+            Destroy(renderer.material);
         }
     }
 }
