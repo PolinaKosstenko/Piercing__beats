@@ -2,7 +2,9 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
+# Добавил "/.idea/", т.к. в других ветках его нет, а в моей есть (не понял прикола 8) )
 .utmp/
+/.idea/
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/

@@ -1,0 +1,46 @@
+{
+    "version": 1,
+    "name": "New Actions",
+    "maps": [
+        {
+            "name": "Jump",
+            "id": "5f6c8fd6-2cf7-4d3e-af5d-ca94a8e84c05",
+            "actions": [
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "290a83dc-7749-46a8-99d9-9a132cb5ee3c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "b5bd191c-0188-40eb-9ce3-6b1a6cc9f7b4",
+                    "path": "<XRInputV1::HTC::HTCViveControllerOpenXR>{RightHand}/{PrimaryTrigger}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2bc60c15-1727-4b67-9a66-54e4f66817be",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

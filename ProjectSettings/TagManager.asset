@@ -5,6 +5,12 @@ TagManager:
   serializedVersion: 3
   tags:
   - Anchor
+  - Enemy
+  - CinemachineTarget
+  - SphereTag
+  - Hands
+  - RobotSpawenr
+  - RobotSpawner
   layers:
   - Default
   - TransparentFX
