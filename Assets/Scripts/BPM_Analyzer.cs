@@ -59,7 +59,7 @@ public class UniBpmAnalyzer
 
         // Search bpm from volume array
         int bpm = SearchBpm(volumeArr, frequency, splitFrameSize)/2;
-        Debug.Log("Matched BPM : " + bpm);
+        // Debug.Log("Matched BPM : " + bpm);
 
         return bpm;
     }

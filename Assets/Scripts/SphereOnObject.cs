@@ -12,10 +12,9 @@ public class CreateSphere : MonoBehaviour
     public GameObject sphereObject;
 
     private AudioSource audioSource;
-    private float beatTimer;
-    private float beatDuration; // Длительность четвертной ноты (1/4)
+    private float beatDuration;
     private float currentBPM;
-    private float trackDuration; // Длительность трека в секундах
+    private float trackDuration;
     private bool isBpmAnalyzed = false;
     private bool isMusicPlaying = false;
     private Collider[] bodyColliders;
@@ -32,23 +31,40 @@ public class CreateSphere : MonoBehaviour
 
     void Start()
     {
+        Initialize();
+        enabled = false;
+    }
+    
+    void Initialize()
+    {
         FindBodyCollidersInThisObject();
         SetupAudioSource();
         AnalyzeBPMAndDuration();
     }
-
+    
+    void OnEnable()
+    {
+        if (!isMusicPlaying && audioSource != null && audioClip != null) StartMusic();
+        if (!isBpmAnalyzed && audioClip != null) AnalyzeBPMAndDuration();
+        
+        timeSinceLastSphere = 0f;
+        currentSpeedIndex = 0;
+        
+        if (noteDurations != null && noteDurations.Length > 0)
+        {
+            nextSphereTime = noteDurations[0];
+        }
+    }
+    
+    void OnDisable()
+    {
+        StopMusic();
+        ClearAllSpheres();
+    }
+    
     void FindBodyCollidersInThisObject()
     {
         bodyCollidersParent = FindDeepChild(transform, "Body's Colliders");
-
-        if (bodyCollidersParent == null)
-        {
-            Debug.LogError($"Could not find 'Body's Colliders' in {gameObject.name} hierarchy!");
-            return;
-        }
-
-        Debug.Log($"Found 'Body's Colliders' at: {bodyCollidersParent.name}");
-
         bodyColliders = new Collider[bodyCollidersParent.childCount];
         int validCollidersCount = 0;
 
@@ -61,11 +77,6 @@ public class CreateSphere : MonoBehaviour
             {
                 bodyColliders[validCollidersCount] = collider;
                 validCollidersCount++;
-                Debug.Log($"Found collider: {child.name}");
-            }
-            else
-            {
-                Debug.LogWarning($"Child '{child.name}' has no Collider component!");
             }
         }
 
@@ -125,8 +136,7 @@ public class CreateSphere : MonoBehaviour
     {
         if (bodyColliders == null || bodyColliders.Length == 0)
         {
-            Debug.LogWarning("No body colliders found, spawning at default position");
-            CreateSphereAtPosition(transform.position);
+            Debug.LogWarning("No colliders!");
             return;
         }
 
@@ -135,7 +145,6 @@ public class CreateSphere : MonoBehaviour
 
         if (selectedCollider == null)
         {
-            Debug.LogWarning("Selected collider is null, choosing another one");
             foreach (Collider coll in bodyColliders)
             {
                 if (coll != null)
@@ -147,38 +156,13 @@ public class CreateSphere : MonoBehaviour
 
             if (selectedCollider == null)
             {
-                CreateSphereAtPosition(transform.position);
                 return;
             }
         }
 
         Vector3 spawnPosition = GetRandomPositionInCollider(selectedCollider);
-        CreateSphereAtPosition(spawnPosition);
-
-        if (currentSpeedIndex < speed.Length)
-        {
-            string noteName = GetNoteName(speed[currentSpeedIndex]);
-            Debug.Log($"Sphere {currentSpeedIndex + 1}/{speed.Length}: {noteName} note ({noteDurations[currentSpeedIndex]:F2}s) at {selectedCollider.name}");
-        }
-    }
-
-    string GetNoteName(int speedValue)
-    {
-        switch (speedValue)
-        {
-            case 1: return "целая";
-            case 2: return "половинная";
-            case 4: return "четвертная";
-            case 8: return "восьмая";
-            case 16: return "шестнадцатая";
-            case 32: return "тридцатьвторая";
-            default: return $"{speedValue}";
-        }
-    }
-
-    void CreateSphereAtPosition(Vector3 position)
-    {
-        GameObject newSphere = Instantiate(sphereObject, position, Quaternion.identity);
+        
+        GameObject newSphere = Instantiate(sphereObject, spawnPosition, Quaternion.identity);
         newSphere.name = "PulseSphere";
 
         SphereController sphereController = newSphere.AddComponent<SphereController>();
@@ -188,11 +172,18 @@ public class CreateSphere : MonoBehaviour
         sphereController.Initialize(sphereScale, currentNoteDuration, difficulty, sphereColor);
 
         activeSpheres.Add(newSphere);
+        
+        Debug.Log($"Создана сфера #{currentSpeedIndex + 1} на {selectedCollider.name}");
     }
 
     void SetupAudioSource()
     {
-        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        
         audioSource.clip = audioClip;
         audioSource.loop = false;
         audioSource.playOnAwake = false;
@@ -200,10 +191,26 @@ public class CreateSphere : MonoBehaviour
 
         if (audioClip != null)
         {
+            trackDuration = audioClip.length;
+            Debug.Log($"Длительность трека: {trackDuration:F2} секунд");
+        }
+    }
+    
+    void StartMusic()
+    {
+        if (audioSource != null && audioClip != null && !audioSource.isPlaying)
+        {
             audioSource.Play();
             isMusicPlaying = true;
-            trackDuration = audioClip.length;
-            Debug.Log($"Track duration: {trackDuration:F2} seconds");
+        }
+    }
+    
+    void StopMusic()
+    {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            isMusicPlaying = false;
         }
     }
 
@@ -214,16 +221,7 @@ public class CreateSphere : MonoBehaviour
             if (!audioSource.isPlaying)
             {
                 isMusicPlaying = false;
-                Debug.Log("Music ended");
-
-                ClearAllSpheres();
-
-                // Показываем статистику
-                Debug.Log($"=== Playback Complete ===");
-                Debug.Log($"Total spheres: {speed.Length}");
-                Debug.Log($"Theoretical duration: {totalGeneratedDuration:F2}s");
-                Debug.Log($"Actual track duration: {trackDuration:F2}s");
-                Debug.Log($"Difference: {Mathf.Abs(totalGeneratedDuration - trackDuration):F2}s");
+                enabled = false;
             }
         }
     }
@@ -242,34 +240,28 @@ public class CreateSphere : MonoBehaviour
 
     void AnalyzeBPMAndDuration()
     {
-        if (audioClip != null)
+        if (audioClip == null) return;
+        
+        currentBPM = UniBpmAnalyzer.AnalyzeBpm(audioClip);
+        
+        if (currentBPM > 0)
         {
-            currentBPM = UniBpmAnalyzer.AnalyzeBpm(audioClip);
-
-            if (currentBPM > 0)
+            beatDuration = 60f / currentBPM;
+            isBpmAnalyzed = true;
+            
+            Debug.Log($"BPM: {currentBPM}, Длительность бита: {beatDuration:F3}с");
+            
+            GenerateNoteSequenceForTrack();
+            CalculateNoteDurations();
+            
+            if (noteDurations != null && noteDurations.Length > 0)
             {
-                CalculateBeatDuration();
-                isBpmAnalyzed = true;
-
-                // Генерируем массив длительностей на всю длину трека
-                GenerateNoteSequenceForTrack();
-
-                // Вычисляем фактические длительности
-                CalculateNoteDurations();
-
-                // Создаем первую сферу
-                CreateNewSphere();
-
-                // Рассчитываем время следующей сферы
-                CalculateNextSphereTime();
-
-                LogGeneratedSequence();
+                nextSphereTime = noteDurations[0];
             }
         }
         else
         {
-            Debug.LogError("Audio clip is not assigned!");
-            isBpmAnalyzed = false;
+            Debug.LogError("Error!");
         }
     }
 
@@ -281,6 +273,8 @@ public class CreateSphere : MonoBehaviour
 
     void GenerateNoteSequenceForTrack()
     {
+        if (beatDuration <= 0) return;
+        
         List<int> noteSequence = new List<int>();
         totalGeneratedDuration = 0f;
 
@@ -290,7 +284,6 @@ public class CreateSphere : MonoBehaviour
         // Генерируем ноты пока не заполним всю длительность трека
         while (totalGeneratedDuration < trackDuration - minNoteDuration)
         {
-            // Выбираем случайную длительность ноты из доступных
             int randomNoteValue = availableNoteValues[Random.Range(0, availableNoteValues.Length)];
 
             // Рассчитываем длительность этой ноты в секундах
@@ -304,17 +297,24 @@ public class CreateSphere : MonoBehaviour
             }
             else
             {
-                // Если не помещается, попробуем более короткую ноту
-                int shorterNote = FindShorterNote(randomNoteValue);
-                if (shorterNote > 0)
+                // Пытаемся найти более короткую ноту
+                bool foundShorter = false;
+                for (int i = 0; i < availableNoteValues.Length; i++)
                 {
-                    float shorterDuration = (4f / shorterNote) * beatDuration;
-                    if (totalGeneratedDuration + shorterDuration <= trackDuration + minNoteDuration)
+                    if (availableNoteValues[i] > randomNoteValue)
                     {
-                        noteSequence.Add(shorterNote);
-                        totalGeneratedDuration += shorterDuration;
+                        float shorterDuration = (4f / availableNoteValues[i]) * beatDuration;
+                        if (totalGeneratedDuration + shorterDuration <= trackDuration + minNoteDuration)
+                        {
+                            noteSequence.Add(availableNoteValues[i]);
+                            totalGeneratedDuration += shorterDuration;
+                            foundShorter = true;
+                            break;
+                        }
                     }
                 }
+                
+                if (!foundShorter) break;
             }
         }
 
@@ -339,6 +339,8 @@ public class CreateSphere : MonoBehaviour
 
     void CalculateNoteDurations()
     {
+        if (speed == null) return;
+        
         noteDurations = new float[speed.Length];
 
         for (int i = 0; i < speed.Length; i++)
@@ -374,6 +376,8 @@ public class CreateSphere : MonoBehaviour
 
     void Update()
     {
+        if (!enabled) return;
+        
         CheckMusicStatus();
 
         if (!isBpmAnalyzed || !isMusicPlaying || speed == null) return;
@@ -389,10 +393,14 @@ public class CreateSphere : MonoBehaviour
         // Проверяем, пора ли создать новую сферу
         if (timeSinceLastSphere >= nextSphereTime && currentSpeedIndex < speed.Length - 1)
         {
-            currentSpeedIndex++;
             CreateNewSphere();
             timeSinceLastSphere = 0f;
-            CalculateNextSphereTime();
+            currentSpeedIndex++;
+            
+            if (currentSpeedIndex < noteDurations.Length)
+            {
+                nextSphereTime = noteDurations[currentSpeedIndex];
+            }
         }
     }
 
@@ -428,10 +436,6 @@ public class CreateSphere : MonoBehaviour
     void OnDestroy()
     {
         ClearAllSpheres();
-
-        if (audioSource != null)
-        {
-            audioSource.Stop();
-        }
+        StopMusic();
     }
 }
