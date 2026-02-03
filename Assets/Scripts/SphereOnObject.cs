@@ -16,7 +16,7 @@ public class CreateSphere : MonoBehaviour
     private float currentBPM;
     private float trackDuration;
     private bool isBpmAnalyzed = false;
-    private bool isMusicPlaying = false;
+    private bool isMusicPlaying = true;
     private Collider[] bodyColliders;
     private Transform bodyCollidersParent;
 
@@ -376,6 +376,20 @@ public class CreateSphere : MonoBehaviour
         if (currentSpeedIndex < noteDurations.Length)
         {
             nextSphereTime = noteDurations[currentSpeedIndex];
+        }
+    }
+
+    string GetNoteName(int speedValue)
+    {
+        switch (speedValue)
+        {
+            case 1: return "целая";
+            case 2: return "половинная";
+            case 4: return "четвертная";
+            case 8: return "восьмая";
+            case 16: return "шестнадцатая";
+            case 32: return "тридцатьвторая";
+            default: return $"{speedValue}";
         }
     }
 

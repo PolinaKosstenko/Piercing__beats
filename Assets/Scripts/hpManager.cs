@@ -4,15 +4,15 @@ using System.Collections;
 public class HpManager : MonoBehaviour
 {
     [SerializeField] private int sphereCount;
-    [SerializeField] private float destroyDelay = 7f;
+    [SerializeField] private float destroyDelay = 0f;
 
-    private float _hp;
+    public float _hp;
     private bool _isAlive = true;
     private bool _initialized;
     private bool _destroyScheduled;
 
     public float HP => _hp;
-    public float MaxHp => _initialized ? sphereCount * 0.4f : 0f;
+    public float MaxHp => 10;
     public bool IsAlive => _isAlive;
 
     void Start()
@@ -29,34 +29,20 @@ public class HpManager : MonoBehaviour
     void TryInitFromSphereCreator()
     {
         if (_initialized) return;
-
-        CreateSphere creator = FindFirstObjectByType<CreateSphere>();
-        if (creator != null && creator.NoteSequence != null && creator.NoteSequence.Length > 0)
-        {
-            sphereCount = creator.NoteSequence.Length;
-            _hp = sphereCount * 0.4f;
-            _initialized = true;
-            Debug.LogWarning(_hp);
-        }
-        else if (sphereCount > 0)
-        {
-            _hp = sphereCount * 0.4f;
-            _initialized = true;
-        }
+        _hp = 10;
+        _initialized = true;
     }
 
     public void TakeDamage(float amount)
     {
-        if (!_initialized)
-            TryInitFromSphereCreator();
-
-        _hp -= amount;
+        _hp -= 2;
         if (_hp <= 0f)
             OnDeath();
     }
 
     void OnDeath()
     {
+        GameObject.FindWithTag("RobotSpawner").GetComponent<RobotSpawner>().SpawnNext();  
         _isAlive = false;
         if (!_destroyScheduled)
         {

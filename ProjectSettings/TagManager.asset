@@ -9,6 +9,8 @@ TagManager:
   - CinemachineTarget
   - SphereTag
   - Hands
+  - RobotSpawenr
+  - RobotSpawner
   layers:
   - Default
   - TransparentFX

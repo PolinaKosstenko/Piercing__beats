@@ -34,16 +34,17 @@ public class TriggerCongratulations : MonoBehaviour
             if (playerObj != null)
                 _player = playerObj.transform;
         }
+
     }
 
     void Update()
     {
-        if (!IsRobotDead())
-        {
-            if (_isActive)
-                HideCongratulations();
-            return;
-        }
+        //if (!IsRobotDead())
+        //{
+        //    if (_isActive)
+        //        HideCongratulations();
+        //    return;
+        //}
 
         Vector3 checkPosition = GetCheckPosition();
         if (float.IsNaN(checkPosition.x)) return;
@@ -94,35 +95,24 @@ public class TriggerCongratulations : MonoBehaviour
     {
         _isActive = false;
         if (_canvasRoot != null)
-            _canvasRoot.SetActive(false);
+            _canvasRoot.SetActive(true);
     }
 
     void CreateCongratulationsUI()
     {
-        Camera cam = Camera.main != null ? Camera.main : Object.FindFirstObjectByType<Camera>();
+        GameObject cam = GameObject.FindWithTag("MainCamera");
 
         _canvasRoot = new GameObject("CongratulationsCanvas");
-        if (useCameraChildForXR && cam != null)
-        {
-            _canvasRoot.transform.SetParent(cam.transform, false);
-            _canvasRoot.transform.localPosition = Vector3.zero;
-            _canvasRoot.transform.localRotation = Quaternion.identity;
-            _canvasRoot.transform.localScale = Vector3.one;
-        }
-        else
-            _canvasRoot.transform.SetParent(null);
-
+         _canvasRoot.transform.SetParent(cam.transform, false);
+        _canvasRoot.transform.localPosition = Vector3.zero + new Vector3(0.0f, 0.0f, 2.0f);
+        _canvasRoot.transform.localRotation = Quaternion.identity;
+        _canvasRoot.transform.localScale = new Vector3(0.005f, 0.005f, 0.005f);
+     
         _canvas = _canvasRoot.AddComponent<Canvas>();
-        if (useCameraChildForXR && cam != null)
-        {
-            _canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            _canvas.worldCamera = cam;
-            _canvas.planeDistance = 0.5f;
-        }
-        else
-        {
-            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        }
+      
+        _canvas.renderMode = RenderMode.WorldSpace;
+        _canvas.planeDistance = 0.5f;
+   
         _canvas.sortingOrder = 32767;
         _canvas.pixelPerfect = false;
 
@@ -196,7 +186,7 @@ public class TriggerCongratulations : MonoBehaviour
         textRect.offsetMin = new Vector2(30f, 30f);
         textRect.offsetMax = new Vector2(-30f, -30f);
 
-        _canvasRoot.SetActive(false);
+        _canvasRoot.SetActive(true);
     }
 
     void OnDestroy()

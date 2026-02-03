@@ -21,34 +21,11 @@ public class hpBarView : MonoBehaviour
 
     void Awake()
     {
-        _hpManager = GetComponent<HpManager>();
-        if (_hpManager == null)
-            _hpManager = GetComponentInParent<HpManager>();
-        if (_hpManager == null)
-        {
-            Debug.LogWarning("HpBarView: HpManager not found on this object or parent.");
-            enabled = false;
-            return;
-        }
-        CreateSphere robot = GetComponent<CreateSphere>();
-        if (robot == null)
-            robot = GetComponentInParent<CreateSphere>();
-        if (robot == null)
-        {
-            enabled = false;
-            return;
-        }
-        Camera mainCam = Camera.main;
-        if (mainCam != null && (transform == mainCam.transform || transform.IsChildOf(mainCam.transform)))
-        {
-            enabled = false;
-            return;
-        }
+        _hpManager = GetComponent<HpManager>();      
     }
 
     void Start()
     {
-        if (_hpManager == null || !enabled) return;
         CreateBar();
     }
 
@@ -82,7 +59,7 @@ public class hpBarView : MonoBehaviour
 
         Sprite white = GetWhiteSprite();
 
-        GameObject canvasGo = new GameObject("HPBarCanvas");
+        GameObject canvasGo = new GameObject("HPBarCanvas" + Random.Range(0, 100000).ToString());
         _canvasRoot = canvasGo;
         canvasGo.transform.SetParent(transform);
         canvasGo.transform.localPosition = offset;
@@ -156,7 +133,7 @@ public class hpBarView : MonoBehaviour
         float maxHp = _hpManager.MaxHp;
         if (maxHp <= 0f) return;
 
-        float fillAmount = Mathf.Clamp01(_hpManager.HP / maxHp);
+        float fillAmount = Mathf.Clamp01(_hpManager._hp / maxHp);
         _fillImage.fillAmount = fillAmount;
         _fillImage.color = fillColor;
     }
