@@ -18,7 +18,14 @@ public class enemy : MonoBehaviour
     void Update()
     {
         float distance = Vector3.Distance(target.position, transform.position);
-
+        if (distance <= LookRadius)
+        {
+            agent.SetDestination(target.position);
+            if (distance <= agent.stoppingDistance)
+            {
+                Debug.Log("OK");
+            }
+        }
     }
 
     private void OnDrawGizmos()
