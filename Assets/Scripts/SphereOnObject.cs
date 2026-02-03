@@ -28,15 +28,18 @@ public class CreateSphere : MonoBehaviour
     private float timeSinceLastSphere = 0f;
     private int currentSpeedIndex = 0;
     private float nextSphereTime = 0f;
+    private HpManager _hpManager;
+
+    public int[] NoteSequence => speed;
 
     void Start()
     {
-        Initialize();
-        enabled = false;
-    }
-    
-    void Initialize()
-    {
+        _hpManager = GetComponent<HpManager>();
+        if (_hpManager == null)
+            _hpManager = GetComponentInParent<HpManager>();
+        if (_hpManager == null)
+            _hpManager = FindFirstObjectByType<HpManager>();
+
         FindBodyCollidersInThisObject();
         SetupAudioSource();
         AnalyzeBPMAndDuration();
@@ -214,6 +217,24 @@ public class CreateSphere : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Если робот мёртв — останавливает музыку и очищает сферы. Возвращает true, если музыка остановлена.
+    /// </summary>
+    bool StopMusicIfRobotDead()
+    {
+        if (_hpManager == null || _hpManager.IsAlive) return false;
+
+        if (isMusicPlaying)
+        {
+            isMusicPlaying = false;
+            if (audioSource != null)
+                audioSource.Stop();
+            ClearAllSpheres();
+            Debug.Log("Robot died — music stopped.");
+        }
+        return true;
+    }
+
     void CheckMusicStatus()
     {
         if (audioSource != null && isMusicPlaying)
@@ -318,6 +339,7 @@ public class CreateSphere : MonoBehaviour
             }
         }
 
+        
         // Конвертируем список в массив
         speed = noteSequence.ToArray();
 
@@ -376,8 +398,9 @@ public class CreateSphere : MonoBehaviour
 
     void Update()
     {
-        if (!enabled) return;
-        
+        if (StopMusicIfRobotDead())
+            return;
+
         CheckMusicStatus();
 
         if (!isBpmAnalyzed || !isMusicPlaying || speed == null) return;

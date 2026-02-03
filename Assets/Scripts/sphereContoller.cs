@@ -7,6 +7,7 @@ public class SphereController : MonoBehaviour
     private float scaleDownSpeed;
     private Color sphereColor;
     private float difficulty;
+    
 
     // Фиксированное время сжатия для всех кругов
     private const float FIXED_CONTRACT_TIME = 1.5f;
